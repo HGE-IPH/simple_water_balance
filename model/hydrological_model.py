@@ -45,14 +45,21 @@ def rainfall_runoff(state, calib_parameters, P, PET, area, dt):
 
         Ws =    Soil moisture fraction limit to start reducing ET (-)
        
-    P: Precipitation for current time step (mm)    
+    P: float
+        Precipitation for current time step (mm)    
     
-    PET: Potential evapotranspiration for current time step (mm)
+    PET: float 
+        Potential evapotranspiration for current time step (mm)
     
-    dt: Simulation time_step (in seconds)   
+    dt: float
+        Simulation time_step (in seconds)   
     
-    area = Catchment drainage area (km²)
- 
+    area: float 
+        Catchment drainage area (km²)
+
+    --------------------------------------------------------------------------
+    Returns: 
+        
     '''
     #--------------------------------------------------------------------------
     #   Description of local variables:
@@ -141,14 +148,13 @@ def rainfall_runoff(state, calib_parameters, P, PET, area, dt):
 def run_model(initial_state, p_series, pet_series, calib_parameters, model_setup):
     '''
     --------------------------------------------------------------------------
-    Perform model computations at each time step
-     
+    Perform model computations at each time step 
     --------------------------------------------------------------------------
 
     Parameters:
     
-        initial_state:
-            
+        initial_state: numpy array
+            A vector containing the initial hydrological conditions (
         
         p_series: numpy array
             A vector with precipitation time series
@@ -161,7 +167,13 @@ def run_model(initial_state, p_series, pet_series, calib_parameters, model_setup
         
         model_setup: dictionary
             Dictionary that contains values for model setup
- 
+
+    --------------------------------------------------------------------------
+    Returns:
+
+        states: numpy array
+            A matrix containing the hydrological states for each time step (rows) and variable (columns)
+     
     '''
     dt = model_setup['dt']
     area = model_setup['area']
@@ -181,7 +193,7 @@ def run_model(initial_state, p_series, pet_series, calib_parameters, model_setup
           curr_state = states[t-1,:]
 
         # Computes catchment states for the next time step
-        states[t,:] = model.rainfall_runoff(curr_state, calib_parameters,
+        states[t,:] = rainfall_runoff(curr_state, calib_parameters,
                                             p_series[t], pet_series[t],
                                             area, dt)
     return states
@@ -190,29 +202,31 @@ def run_model(initial_state, p_series, pet_series, calib_parameters, model_setup
 def generate_ic(q_specific, n_casc_reservoirs, Wm, CB, area):
     '''
     Function to generate (arbitrary) initial conditions 
-    
+
+    --------------------------------------------------------------------------
     Parameters:
     
     q_specific:: float
-       
         Average specific catchment discharge (L/s.km²)     
         
     n_casc_reservoirs: int
-    
-        Number of cascading reservoirs for surface runoff
+       Number of cascading reservoirs for surface runoff
         
     Wm: float
-    
-        Maximum water storage capacity
+       Maximum water storage capacity
         
     CB: float
-    
-        Recession coefficient for groundwater reservoir (days)    
+       Recession coefficient for groundwater reservoir (days)    
         
-    
     area: float
-        
-        Catchment area (km²)
+       Catchment area (km²)
+
+    --------------------------------------------------------------------------
+    Returns:
+    
+    in_state: numpy array
+        A vector containing the initial hydrological conditions    
+    
     '''
     # 50 % of maximum water storage capacity
     w_start = 0.5 * Wm   
